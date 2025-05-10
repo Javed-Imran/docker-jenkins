@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 set -e
-COMMIT=$(git rev-parse --short HEAD)
-echo "Building commit $COMMIT in $(pwd)"
 
-# Build and tag “latest”
+if [ -z "$1" ]; then
+  echo "Usage: $0 <COMMIT>"
+  exit 1
+fi
+
+COMMIT="$1"
+echo "Building commit $COMMIT inside $(pwd)"
+
+# build latest
 docker build -t nodeapp:latest .
 
-# Build and tag with the current commit hash
-docker build -t nodeapp:$COMMIT .
+# build commit-specific
+docker build -t nodeapp:"$COMMIT" .
+
