@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 set -e
-COMMIT=$(git rev-parse HEAD)
-echo "Building $COMMIT inside $(pwd)"
+COMMIT=$(git rev-parse --short HEAD)
+echo "Building commit $COMMIT in $(pwd)"
 
-docker build -t nodeapp/"$BRANCH_NAME":latest .
-docker build -t nodeapp/"$BRANCH_NAME":$COMMIT .
+# Build and tag “latest”
+docker build -t nodeapp:latest .
+
+# Build and tag with the current commit hash
+docker build -t nodeapp:$COMMIT .
