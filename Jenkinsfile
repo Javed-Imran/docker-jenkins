@@ -1,35 +1,33 @@
-#!/usr/bin/env groovy
- pipeline {
-   agent any
-+  environment {
-+    // get the short commit hash once
-+    COMMIT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-+  }
-   stages {
+pipeline {
+  agent any
 
-     stage('test') {
-       steps {
-         sh "docker container run --rm -w /app -v \$(pwd):/app node:10.17.0 bash -c 'npm i -D && npm run test && rm -rf node_modules/'"
-       }
-     }
+  environment {
+    // capture the short commit hash
+    COMMIT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
+  }
 
-     stage('package') {
-       steps {
-         sh "chmod +x ./scripts/build.sh"
--        sh "./scripts/build.sh"
-+        // pass the commit so build.sh can tag correctly
-+        sh "./scripts/build.sh ${COMMIT}"
-       }
-     }
+  stages {
+    stage('Test') {
+      steps {
+        sh "docker run --rm -w /app -v \$(pwd):/app node:10.17.0 bash -c 'npm i -D && npm run test && rm -rf node_modules/'"
+      }
+    }
 
-     stage('deploy') {
-       steps {
-         sh "chmod +x ./scripts/deploy.sh"
--        // whatever you have now
-+        // pass the same commit to deploy.sh
-+        sh "./scripts/deploy.sh ${COMMIT}"
-       }
-     }
-   }
- }
+    stage('Package') {
+      steps {
+        sh "chmod +x ./scripts/build.sh"
+        // pass COMMIT to build.sh
+        sh "./scripts/build.sh ${COMMIT}"
+      }
+    }
+
+    stage('Deploy') {
+      steps {
+        sh "chmod +x ./scripts/deploy.sh"
+        // pass COMMIT to deploy.sh
+        sh "./scripts/deploy.sh ${COMMIT}"
+      }
+    }
+  }
+}
 
